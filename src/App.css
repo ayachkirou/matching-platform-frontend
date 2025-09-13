@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Styles pour les animations de survol */
+.hover-scale {
+  transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
