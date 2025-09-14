@@ -8,22 +8,28 @@ function StudentSignup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    // Step 1
+    // Step 1: Informations personnelles
     email: '',
     motDePasse: '',
     confirmPassword: '',
     nom: '',
     prenom: '',
     telephone: '',
+    adresse: '',
     
-    // Step 2
+    // Step 2: Formation et compétences
     diplome: '',
+    autreDiplome: '',
     specialite: '',
     etablissement: '',
     anneeObtention: new Date().getFullYear(),
     competences: '',
     experiences: '',
-    statut: 'AUTRE'
+    statut: 'AUTRE',
+    
+    // Step 3: Documents
+    cv: null,
+    photoProfil: null
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -44,6 +50,14 @@ function StudentSignup() {
     }
   };
 
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: files[0]
+    }));
+  };
+
   const validateStep1 = () => {
     const newErrors = {};
     
@@ -57,6 +71,8 @@ function StudentSignup() {
     
     if (!formData.nom) newErrors.nom = 'Nom est obligatoire';
     if (!formData.prenom) newErrors.prenom = 'Prénom est obligatoire';
+    if (!formData.telephone) newErrors.telephone = 'Téléphone est obligatoire';
+    if (!formData.adresse) newErrors.adresse = 'Adresse est obligatoire';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -65,12 +81,28 @@ function StudentSignup() {
   const validateStep2 = () => {
     const newErrors = {};
     
-    if (!formData.diplome) newErrors.diplome = 'Diplôme est obligatoire';
+    if (!formData.diplome) {
+      newErrors.diplome = 'Diplôme est obligatoire';
+    } else if (formData.diplome === 'Autre' && !formData.autreDiplome) {
+      newErrors.autreDiplome = 'Veuillez préciser votre diplôme';
+    }
     if (!formData.specialite) newErrors.specialite = 'Spécialité est obligatoire';
     if (!formData.etablissement) newErrors.etablissement = 'Établissement est obligatoire';
     if (!formData.anneeObtention || formData.anneeObtention < 1900 || formData.anneeObtention > new Date().getFullYear() + 5) {
       newErrors.anneeObtention = 'Année d\'obtention invalide';
     }
+    if (!formData.competences) newErrors.competences = 'Compétences sont obligatoires';
+    if (!formData.experiences) newErrors.experiences = 'Expériences sont obligatoires';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep3 = () => {
+    const newErrors = {};
+    
+    if (!formData.cv) newErrors.cv = 'Le CV est obligatoire';
+    else if (formData.cv.type !== 'application/pdf') newErrors.cv = 'Le fichier doit être au format PDF';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,6 +112,8 @@ function StudentSignup() {
     if (step === 1 && validateStep1()) {
       setStep(2);
     } else if (step === 2 && validateStep2()) {
+      setStep(3);
+    } else if (step === 3 && validateStep3()) {
       handleSubmit();
     }
   };
@@ -92,18 +126,41 @@ function StudentSignup() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:8080/api/students/register', {
+      // Créer FormData pour envoyer les fichiers
+      const submitData = new FormData();
+      
+      const diplomeFinal = formData.diplome === 'Autre' 
+        ? formData.autreDiplome 
+        : formData.diplome;
+      
+      // Ajouter les champs texte
+      submitData.append('email', formData.email);
+      submitData.append('motDePasse', formData.motDePasse);
+      submitData.append('nom', formData.nom);
+      submitData.append('prenom', formData.prenom);
+      submitData.append('telephone', formData.telephone);
+      submitData.append('adresse', formData.adresse);
+      submitData.append('diplome', diplomeFinal);
+      submitData.append('specialite', formData.specialite);
+      submitData.append('etablissement', formData.etablissement);
+      submitData.append('anneeObtention', formData.anneeObtention);
+      submitData.append('competences', formData.competences);
+      submitData.append('experiences', formData.experiences);
+      submitData.append('statut', formData.statut);
+      
+      // Ajouter les fichiers
+      if (formData.cv) submitData.append('cv', formData.cv);
+      if (formData.photoProfil) submitData.append('photoProfil', formData.photoProfil);
+      
+      const response = await fetch('http://localhost:8080/api/students/register-with-files', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: submitData,
       });
       
       if (response.ok) {
         const student = await response.json();
         console.log('Inscription réussie:', student);
-        navigate('/login'); // Rediriger vers la page de connexion
+        navigate('/login');
       } else {
         const errorData = await response.json();
         setErrors({ submit: errorData.message || 'Erreur lors de l\'inscription' });
@@ -115,7 +172,7 @@ function StudentSignup() {
     }
   };
 
-  const progress = (step / 2) * 100;
+  const progress = (step / 3) * 100;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -135,7 +192,7 @@ function StudentSignup() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-500 mb-2">
-            <span>Étape {step} sur 2</span>
+            <span>Étape {step} sur 3</span>
             <span>{Math.round(progress)}% complété</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -234,13 +291,13 @@ function StudentSignup() {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <span className="text-sm">👁️</span>
+                      <i className="fas fa-eye-slash text-sm"></i>
                     ) : (
-                      <span className="text-sm">👁️‍🗨️</span>
+                      <i className="fas fa-eye text-sm"></i>
                     )}
                   </button>
                 </div>
@@ -250,7 +307,7 @@ function StudentSignup() {
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                   Confirmer le mot de passe *
-                </label>
+                  </label>
                 <div className="relative">
                   <input
                     id="confirmPassword"
@@ -265,13 +322,13 @@ function StudentSignup() {
                   />
                   <button
                     type="button"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <span className="text-sm">👁️</span>
+                      <i className="fas fa-eye-slash text-sm"></i>
                     ) : (
-                      <span className="text-sm">👁️‍🗨️</span>
+                      <i className="fas fa-eye text-sm"></i>
                     )}
                   </button>
                 </div>
@@ -280,7 +337,7 @@ function StudentSignup() {
 
               <div className="space-y-2">
                 <label htmlFor="telephone" className="block text-sm font-medium text-gray-700">
-                  Téléphone
+                  Téléphone *
                 </label>
                 <input
                   id="telephone"
@@ -288,9 +345,30 @@ function StudentSignup() {
                   type="tel"
                   value={formData.telephone}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.telephone ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="+33 6 12 34 56 78"
                 />
+                {errors.telephone && <p className="text-red-500 text-sm">{errors.telephone}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="adresse" className="block text-sm font-medium text-gray-700">
+                  Adresse *
+                </label>
+                <textarea
+                  id="adresse"
+                  name="adresse"
+                  value={formData.adresse}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.adresse ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Votre adresse complète"
+                  rows={3}
+                />
+                {errors.adresse && <p className="text-red-500 text-sm">{errors.adresse}</p>}
               </div>
 
               <button
@@ -326,15 +404,36 @@ function StudentSignup() {
                 >
                   <option value="">Sélectionnez votre diplôme</option>
                   <option value="Baccalauréat">Baccalauréat</option>
-                  <option value="BTS">BTS</option>
                   <option value="DUT">DUT</option>
+                  <option value="BTS">BTS</option>
+                  <option value="ISTA">ISTA</option>
                   <option value="Licence">Licence</option>
                   <option value="Master">Master</option>
                   <option value="Doctorat">Doctorat</option>
-                  <option value="Autre">Autre</option>
+                  <option value="Autre">Autre (précisez)</option>
                 </select>
                 {errors.diplome && <p className="text-red-500 text-sm">{errors.diplome}</p>}
               </div>
+
+              {formData.diplome === 'Autre' && (
+                <div className="space-y-2">
+                  <label htmlFor="autreDiplome" className="block text-sm font-medium text-gray-700">
+                    Précisez votre diplôme *
+                  </label>
+                  <input
+                    id="autreDiplome"
+                    name="autreDiplome"
+                    type="text"
+                    value={formData.autreDiplome}
+                    onChange={handleInputChange}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                      errors.autreDiplome ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="Votre diplôme"
+                  />
+                  {errors.autreDiplome && <p className="text-red-500 text-sm">{errors.autreDiplome}</p>}
+                </div>
+              )}
 
               <div className="space-y-2">
                 <label htmlFor="specialite" className="block text-sm font-medium text-gray-700">
@@ -393,37 +492,43 @@ function StudentSignup() {
 
               <div className="space-y-2">
                 <label htmlFor="competences" className="block text-sm font-medium text-gray-700">
-                  Compétences
+                  Compétences *
                 </label>
                 <textarea
                   id="competences"
                   name="competences"
                   value={formData.competences}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.competences ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Listez vos compétences séparées par des virgules (Java, React, Python...)"
                   rows={3}
                 />
+                {errors.competences && <p className="text-red-500 text-sm">{errors.competences}</p>}
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="experiences" className="block text-sm font-medium text-gray-700">
-                  Expérience professionnelle
+                  Expérience professionnelle *
                 </label>
                 <textarea
                   id="experiences"
                   name="experiences"
                   value={formData.experiences}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.experiences ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="Décrivez brièvement vos expériences (stages, jobs étudiants, projets...)"
                   rows={4}
                 />
+                {errors.experiences && <p className="text-red-500 text-sm">{errors.experiences}</p>}
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="statut" className="block text-sm font-medium text-gray-700">
-                  Statut actuel
+                  Statut actuel *
                 </label>
                 <select
                   id="statut"
@@ -436,6 +541,98 @@ function StudentSignup() {
                   <option value="RECHERCHE_STAGE">Recherche un stage</option>
                   <option value="RECHERCHE_EMPLOI">Recherche un emploi</option>
                 </select>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={handlePreviousStep}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Retour
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Continuer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Documents */}
+        {step === 3 && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Documents</h2>
+            <p className="text-gray-600 mb-6">Ajoutez votre CV et photo de profil pour finaliser votre inscription</p>
+            
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  CV (PDF) *
+                </label>
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                  errors.cv ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-green-500'
+                }`}>
+                  <div className="w-8 h-8 text-gray-400 mx-auto mb-2">
+                    <i className="fas fa-file-pdf text-2xl"></i>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {formData.cv ? formData.cv.name : 'Glissez-déposez votre CV PDF ou cliquez pour sélectionner'}
+                  </p>
+                  <input
+                    type="file"
+                    id="cv"
+                    name="cv"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="cv"
+                    className="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 cursor-pointer"
+                  >
+                    Choisir un fichier
+                  </label>
+                </div>
+                {errors.cv && <p className="text-red-500 text-sm">{errors.cv}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Photo de profil (optionnel)
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                  <div className="w-8 h-8 text-gray-400 mx-auto mb-2">
+                    <i className="fas fa-camera text-2xl"></i>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {formData.photoProfil ? formData.photoProfil.name : 'Ajoutez une photo professionnelle'}
+                  </p>
+                  <input
+                    type="file"
+                    id="photoProfil"
+                    name="photoProfil"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="photoProfil"
+                    className="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 cursor-pointer"
+                  >
+                    Choisir une photo
+                  </label>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-700">
+                  En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+                </p>
               </div>
 
               <div className="flex space-x-4">

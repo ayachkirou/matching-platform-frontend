@@ -5,6 +5,7 @@ import App from './App.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Signup from './Signup.jsx'
 import StudentSignup from "./signup/student.jsx";
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
