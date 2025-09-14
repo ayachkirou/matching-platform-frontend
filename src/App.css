@@ -12,3 +12,7 @@ body {
 .hover-scale:hover {
   transform: scale(1.02);
 }
+
+button:hover{
+  cursor: pointer;
+}
