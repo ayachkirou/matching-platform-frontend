@@ -32,6 +32,7 @@ function StudentSignup() {
     photoProfil: null
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
@@ -58,7 +59,22 @@ function StudentSignup() {
     }));
   };
 
-  const validateStep1 = () => {
+  // Fonction pour vérifier si l'email existe déjà
+  const checkEmailExists = async (email) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/check-email?email=${encodeURIComponent(email)}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data.exists;
+      }
+      return false;
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'email:', error);
+      return false;
+    }
+  };
+
+  const validateStep1 = async () => {
     const newErrors = {};
     
     if (!formData.email) newErrors.email = 'Email est obligatoire';
@@ -74,8 +90,30 @@ function StudentSignup() {
     if (!formData.telephone) newErrors.telephone = 'Téléphone est obligatoire';
     if (!formData.adresse) newErrors.adresse = 'Adresse est obligatoire';
     
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // Si il y a des erreurs de validation basique, on les affiche
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return false;
+    }
+    
+    // Vérifier si l'email existe déjà
+    setIsCheckingEmail(true);
+    try {
+      const emailExists = await checkEmailExists(formData.email);
+      if (emailExists) {
+        setErrors({ email: 'Cet email est déjà utilisé par un autre utilisateur' });
+        setIsCheckingEmail(false);
+        return false;
+      }
+    } catch (error) {
+      setErrors({ email: 'Erreur lors de la vérification de l\'email' });
+      setIsCheckingEmail(false);
+      return false;
+    }
+    
+    setIsCheckingEmail(false);
+    setErrors({});
+    return true;
   };
 
   const validateStep2 = () => {
@@ -108,9 +146,12 @@ function StudentSignup() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextStep = () => {
-    if (step === 1 && validateStep1()) {
-      setStep(2);
+  const handleNextStep = async () => {
+    if (step === 1) {
+      const isValid = await validateStep1();
+      if (isValid) {
+        setStep(2);
+      }
     } else if (step === 2 && validateStep2()) {
       setStep(3);
     } else if (step === 3 && validateStep3()) {
@@ -374,9 +415,10 @@ function StudentSignup() {
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                disabled={isCheckingEmail}
+                className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                Continuer
+                {isCheckingEmail ? 'Vérification de l\'email...' : 'Continuer'}
               </button>
             </div>
           </div>
@@ -398,7 +440,7 @@ function StudentSignup() {
                   name="diplome"
                   value={formData.diplome}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.diplome ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
