@@ -34,6 +34,10 @@ function StudentSignup() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [errors, setErrors] = useState({});
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isSendingCode, setIsSendingCode] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -70,6 +74,40 @@ function StudentSignup() {
       return false;
     } catch (error) {
       console.error('Erreur lors de la vérification de l\'email:', error);
+      return false;
+    }
+  };
+
+  // Fonction pour envoyer le code de vérification
+  const sendVerificationCode = async (email) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/students/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `email=${encodeURIComponent(email)}`
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du code:', error);
+      return false;
+    }
+  };
+
+  // Fonction pour vérifier le code
+  const verifyCode = async (email, code) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/students/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `email=${encodeURIComponent(email)}&code=${encodeURIComponent(code)}`
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Erreur lors de la vérification du code:', error);
       return false;
     }
   };
@@ -150,7 +188,16 @@ function StudentSignup() {
     if (step === 1) {
       const isValid = await validateStep1();
       if (isValid) {
-        setStep(2);
+        // Envoyer le code de vérification
+        setIsSendingCode(true);
+        const success = await sendVerificationCode(formData.email);
+        setIsSendingCode(false);
+        
+        if (success) {
+          setVerificationStep(true);
+        } else {
+          setErrors({ submit: 'Erreur lors de l\'envoi du code de vérification' });
+        }
       }
     } else if (step === 2 && validateStep2()) {
       setStep(3);
@@ -159,8 +206,44 @@ function StudentSignup() {
     }
   };
 
+  const handleVerification = async () => {
+    if (!verificationCode) {
+      setErrors({ verification: 'Veuillez entrer le code de vérification' });
+      return;
+    }
+
+    setIsVerifying(true);
+    const isValid = await verifyCode(formData.email, verificationCode);
+    setIsVerifying(false);
+
+    if (isValid) {
+      setVerificationStep(false);
+      setStep(2);
+      setErrors({});
+    } else {
+      setErrors({ verification: 'Code de vérification incorrect' });
+    }
+  };
+
+  const handleResendCode = async () => {
+    setIsSendingCode(true);
+    const success = await sendVerificationCode(formData.email);
+    setIsSendingCode(false);
+    
+    if (success) {
+      setErrors({});
+      alert('Code de vérification renvoyé avec succès!');
+    } else {
+      setErrors({ verification: 'Erreur lors de l\'envoi du code' });
+    }
+  };
+
   const handlePreviousStep = () => {
-    setStep(step - 1);
+    if (verificationStep) {
+      setVerificationStep(false);
+    } else {
+      setStep(step - 1);
+    }
   };
 
   const handleSubmit = async () => {
@@ -213,7 +296,7 @@ function StudentSignup() {
     }
   };
 
-  const progress = (step / 3) * 100;
+  const progress = verificationStep ? 33 : (step / 3) * 100;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -233,7 +316,7 @@ function StudentSignup() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between text-sm text-gray-500 mb-2">
-            <span>Étape {step} sur 3</span>
+            <span>Étape {verificationStep ? 'Vérification' : step} sur {verificationStep ? 2 : 3}</span>
             <span>{Math.round(progress)}% complété</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -251,8 +334,66 @@ function StudentSignup() {
           </div>
         )}
 
+        {/* Étape de vérification */}
+        {verificationStep && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Vérification de l'email</h2>
+            <p className="text-gray-600 mb-6">
+              Nous avons envoyé un code de vérification à <strong>{formData.email}</strong>
+            </p>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700">
+                  Code de vérification *
+                </label>
+                <input
+                  id="verificationCode"
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    errors.verification ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="Entrez le code reçu par email"
+                />
+                {errors.verification && <p className="text-red-500 text-sm">{errors.verification}</p>}
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setVerificationStep(false)}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Retour
+                </button>
+                <button
+                  type="button"
+                  onClick={handleVerification}
+                  disabled={isVerifying}
+                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  {isVerifying ? 'Vérification...' : 'Vérifier'}
+                </button>
+              </div>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={handleResendCode}
+                  disabled={isSendingCode}
+                  className="text-green-600 hover:underline disabled:opacity-50 text-sm"
+                >
+                  {isSendingCode ? 'Envoi en cours...' : 'Renvoyer le code'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Step 1: Basic Information */}
-        {step === 1 && (
+        {step === 1 && !verificationStep && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Informations personnelles</h2>
             <p className="text-gray-600 mb-6">Commençons par vos informations de base</p>
@@ -415,17 +556,18 @@ function StudentSignup() {
               <button
                 type="button"
                 onClick={handleNextStep}
-                disabled={isCheckingEmail}
+                disabled={isCheckingEmail || isSendingCode}
                 className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
-                {isCheckingEmail ? 'Vérification de l\'email...' : 'Continuer'}
+                {isCheckingEmail ? 'Vérification de l\'email...' : 
+                 isSendingCode ? 'Envoi du code...' : 'Continuer'}
               </button>
             </div>
           </div>
         )}
 
         {/* Step 2: Education & Skills */}
-        {step === 2 && (
+        {step === 2 && !verificationStep && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Formation et compétences</h2>
             <p className="text-gray-600 mb-6">Parlez-nous de votre parcours académique</p>
@@ -440,7 +582,7 @@ function StudentSignup() {
                   name="diplome"
                   value={formData.diplome}
                   onChange={handleInputChange}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.diplome ? 'border-red-500' : 'border-gray-300'
                   }`}
                 >
@@ -606,7 +748,7 @@ function StudentSignup() {
         )}
 
         {/* Step 3: Documents */}
-        {step === 3 && (
+        {step === 3 && !verificationStep && (
           <div className="bg-white rounded-xl shadow-md p-6 mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Documents</h2>
             <p className="text-gray-600 mb-6">Ajoutez votre CV et photo de profil pour finaliser votre inscription</p>
