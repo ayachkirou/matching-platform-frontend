@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Signup from './Signup.jsx'
 import CompanySignup from "./signup/company.jsx";
 import StudentSignup from "./signup/student.jsx";
+import CompanyConfirmation from './pages/CompanyConfirmation';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 createRoot(document.getElementById('root')).render(
@@ -16,6 +17,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/signup" element={<Signup />} />
         <Route path="/signup/student" element={<StudentSignup />} />
         <Route path="/signup/company" element={<CompanySignup />} />
+        <Route path="/company/confirmation" element={<CompanyConfirmation />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

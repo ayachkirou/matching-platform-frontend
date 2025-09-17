@@ -300,7 +300,11 @@ function CompanySignup() {
       if (response.ok) {
         const company = await response.json();
         console.log('Inscription réussie:', company);
-        navigate('/login');
+        
+        // Redirection vers la page de confirmation avec les données
+        navigate('/company/confirmation', { 
+          state: { company: company } 
+        });
       } else {
         const errorData = await response.json();
         setErrors({ submit: errorData.message || 'Erreur lors de l\'inscription' });
@@ -320,7 +324,7 @@ function CompanySignup() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">TM</span>
             </div>
             <span className="text-2xl font-bold text-gray-800">TalentMatch</span>
@@ -337,7 +341,7 @@ function CompanySignup() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              className="bg-green-600 h-2 rounded-full transition-all duration-300" 
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -368,7 +372,7 @@ function CompanySignup() {
                   type="text"
                   value={verificationCode}
                   onChange={(e) => setVerificationCode(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.verification ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Entrez le code reçu par email"
@@ -388,7 +392,7 @@ function CompanySignup() {
                   type="button"
                   onClick={handleVerification}
                   disabled={isVerifying}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   {isVerifying ? 'Vérification...' : 'Vérifier'}
                 </button>
@@ -399,7 +403,7 @@ function CompanySignup() {
                   type="button"
                   onClick={handleResendCode}
                   disabled={isSendingCode}
-                  className="text-blue-600 hover:underline disabled:opacity-50 text-sm"
+                  className="text-green-600 hover:underline disabled:opacity-50 text-sm"
                 >
                   {isSendingCode ? 'Envoi en cours...' : 'Renvoyer le code'}
                 </button>
@@ -425,7 +429,7 @@ function CompanySignup() {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="contact@entreprise.com"
@@ -444,7 +448,7 @@ function CompanySignup() {
                     type={showPassword ? "text" : "password"}
                     value={formData.motDePasse}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                       errors.motDePasse ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="••••••••"
@@ -475,7 +479,7 @@ function CompanySignup() {
                     type={showConfirmPassword ? "text" : "password"}
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                       errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="••••••••"
@@ -499,7 +503,7 @@ function CompanySignup() {
                 type="button"
                 onClick={handleNextStep}
                 disabled={isCheckingEmail || isSendingCode}
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
               >
                 {isCheckingEmail ? 'Vérification de l\'email...' : 
                  isSendingCode ? 'Envoi du code...' : 'Continuer'}
@@ -525,7 +529,7 @@ function CompanySignup() {
                   type="text"
                   value={formData.nomEntreprise}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.nomEntreprise ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Nom officiel de votre entreprise"
@@ -543,7 +547,7 @@ function CompanySignup() {
                   type="tel"
                   value={formData.telephone}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.telephone ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="+212 5 23 45 67 89"
@@ -560,7 +564,7 @@ function CompanySignup() {
                   name="adresse"
                   value={formData.adresse}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.adresse ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Adresse complète de l'entreprise"
@@ -579,7 +583,7 @@ function CompanySignup() {
                   type="url"
                   value={formData.siteWeb}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="https://www.votre-entreprise.com"
                 />
               </div>
@@ -595,7 +599,7 @@ function CompanySignup() {
                     type="text"
                     value={formData.registreCommerce}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="RC"
                   />
                 </div>
@@ -610,7 +614,7 @@ function CompanySignup() {
                     type="text"
                     value={formData.ice}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="001234567890"
                   />
                 </div>
@@ -626,7 +630,7 @@ function CompanySignup() {
                   type="text"
                   value={formData.secteurActivite}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                     errors.secteurActivite ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Informatique, Conseil, Santé, etc."
@@ -643,7 +647,7 @@ function CompanySignup() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   placeholder="Décrivez brièvement votre entreprise, ses valeurs et ses activités..."
                   rows={4}
                 />
@@ -661,7 +665,7 @@ function CompanySignup() {
                   type="button"
                   onClick={handleNextStep}
                   disabled={isCheckingCompany}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   {isCheckingCompany ? 'Vérification...' : 'Continuer'}
                 </button>
@@ -682,7 +686,7 @@ function CompanySignup() {
                   Document justificatif *
                 </label>
                 <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                  errors.documentJustificatif ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-500'
+                  errors.documentJustificatif ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-green-500'
                 }`}>
                   <div className="w-8 h-8 text-gray-400 mx-auto mb-2">
                     <i className="fas fa-file-pdf text-2xl"></i>
@@ -715,7 +719,7 @@ function CompanySignup() {
                 <label className="block text-sm font-medium text-gray-700">
                   Logo de l'entreprise (optionnel)
                 </label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
                   <div className="w-8 h-8 text-gray-400 mx-auto mb-2">
                     <i className="fas fa-image text-2xl"></i>
                   </div>
@@ -739,9 +743,9 @@ function CompanySignup() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700">
-                  📋 Votre compte sera créé avec le statut <strong>"En attente de vérification"</strong>.
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-green-700">
+                  Votre compte sera créé avec le statut <strong>"En attente de vérification"</strong>.
                   Notre équipe examinera vos documents sous 24-48 heures. Vous recevrez un email de confirmation une fois votre compte approuvé.
                 </p>
               </div>
@@ -758,7 +762,7 @@ function CompanySignup() {
                   type="button"
                   onClick={handleNextStep}
                   disabled={isLoading}
-                  className="flex-1 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-1 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
                   {isLoading ? 'Création du compte...' : 'Finaliser l\'inscription'}
                 </button>
@@ -770,7 +774,7 @@ function CompanySignup() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Vous avez déjà un compte ?{' '}
-            <button onClick={() => navigate('/login')} className="text-blue-600 hover:underline">
+            <button onClick={() => navigate('/login')} className="text-green-600 hover:underline">
               Se connecter
             </button>
           </p>
