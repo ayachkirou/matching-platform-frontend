@@ -4,6 +4,7 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Signup from './Signup.jsx'
+import CompanySignup from "./signup/company.jsx";
 import StudentSignup from "./signup/student.jsx";
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -14,6 +15,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/signup/student" element={<StudentSignup />} />
+        <Route path="/signup/company" element={<CompanySignup />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,
