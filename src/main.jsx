@@ -7,6 +7,7 @@ import Signup from './Signup.jsx'
 import CompanySignup from "./signup/company.jsx";
 import StudentSignup from "./signup/student.jsx";
 import CompanyConfirmation from './pages/CompanyConfirmation';
+import Login from './Login';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/signup" element={<Signup />} />
         <Route path="/signup/student" element={<StudentSignup />} />
         <Route path="/signup/company" element={<CompanySignup />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/company/confirmation" element={<CompanyConfirmation />} />
       </Routes>
     </BrowserRouter>
