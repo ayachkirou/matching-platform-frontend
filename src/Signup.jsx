@@ -51,7 +51,7 @@ function Signup() {
           </ul>
           
           <button
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+            className="w-full py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
             onClick={() => navigate('/signup/student')}
           >
             S'inscrire comme étudiant
@@ -83,7 +83,7 @@ function Signup() {
           </ul>
           
           <button
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+            className="w-full py-3 bg-green-600 text-white font-500 rounded-lg hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
             onClick={() => navigate('/signup/company')}
           >
             S'inscrire comme entreprise

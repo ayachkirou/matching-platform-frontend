@@ -7,7 +7,6 @@ function CompanyConfirmation() {
   const location = useLocation();
   const [companyData, setCompanyData] = useState(null);
 
-
   useEffect(() => {
     // Récupérer les données de l'entreprise depuis l'état de navigation
     if (location.state?.company) {

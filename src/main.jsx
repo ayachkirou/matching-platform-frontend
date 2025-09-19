@@ -9,6 +9,7 @@ import StudentSignup from "./signup/student.jsx";
 import CompanyConfirmation from './pages/CompanyConfirmation';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

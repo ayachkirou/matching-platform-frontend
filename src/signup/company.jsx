@@ -27,6 +27,7 @@ function CompanySignup() {
     documentJustificatif: null,
     logo: null
   });
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [isCheckingCompany, setIsCheckingCompany] = useState(false);
