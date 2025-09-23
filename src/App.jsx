@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import './App.css'
+import JobDetails from './JobDetails'
 
 function App() {
 
   return <div className="App">
-    <h1 className="text-3xl font-bold underline text-blue-700">
-      Hello world!
-    </h1>
+    <JobDetails/>
   </div>
 }
 
