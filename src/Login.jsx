@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import { authService } from './services/authService';
 import './App.css';
 import logo from './assets/logo.png'
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,66 +33,48 @@ function Login() {
     setError("");
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Vérifier si le type d'utilisateur correspond à l'onglet sélectionné
-        if ((activeTab === 'student' && data.role !== 'STUDENT') ||
-            (activeTab === 'company' && data.role !== 'COMPANY')) {
-          setError('Veuillez vous connecter avec le bon type de compte');
-          setIsLoading(false);
-          return;
-        }
-
-        // Vérifier le statut de vérification pour les entreprises
-        if (data.role === 'COMPANY') {
-          if (data.statusVerification === 'PENDING') {
-            setError('Votre compte entreprise est en attente de vérification. Vous recevrez un email une fois approuvé.');
-            setIsLoading(false);
-            return;
-          } else if (data.statusVerification === 'REJECTED') {
-            setError('Votre compte entreprise a été rejeté. Veuillez contacter le support pour plus d\'informations.');
-            setIsLoading(false);
-            return;
-          } 
-        }
-
-        // Stocker le token dans le localStorage
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify({
-          id: data.id,
-          email: data.email,
-          role: data.role,
-          nom: data.nom,
-          prenom: data.prenom,
-          nomEntreprise: data.nomEntreprise,
-          isVerified: data.isVerified,
-          statusVerification: data.statusVerification
-        }));
-
-        // Rediriger selon le rôle
-        if (data.role === 'STUDENT') {
-          navigate('/student/dashboard');
-        } else if (data.role === 'COMPANY') {
-          navigate('/company/dashboard');
-        } else if (data.role === 'ADMIN') {
-          navigate('/admin/dashboard');
-        }
-
-      } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Email ou mot de passe incorrect');
+      const response = await authService.login(formData.email, formData.motDePasse);
+      
+      // Vérifier si le type d'utilisateur correspond à l'onglet sélectionné
+      if ((activeTab === 'student' && response.role !== 'STUDENT') ||
+          (activeTab === 'company' && response.role !== 'COMPANY')) {
+        setError('Veuillez vous connecter avec le bon type de compte');
+        setIsLoading(false);
+        return;
       }
+
+      // Vérifier le statut de vérification pour les entreprises
+      if (response.role === 'COMPANY' && !response.isVerified) {
+        setError('Votre compte entreprise est en attente de vérification. Vous recevrez un email une fois approuvé.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Stocker les données utilisateur dans le contexte
+      const userData = {
+        id: response.id,
+        email: response.email,
+        role: response.role,
+        nom: response.nom,
+        prenom: response.prenom,
+        nomEntreprise: response.nomEntreprise,
+        isVerified: response.isVerified
+      };
+
+      // Utiliser le contexte d'authentification pour connecter l'utilisateur
+      login(userData, response.token);
+      
+      // Rediriger selon le rôle
+      if (response.role === 'STUDENT') {
+        navigate('/student/profile');
+      } else if (response.role === 'COMPANY') {
+        navigate('/company/dashboard');
+      } else if (response.role === 'ADMIN') {
+        navigate('/admin/dashboard');
+      }
+
     } catch (error) {
-      setError('Email ou mot de passe incorrect');
+      setError(error.message || 'Email ou mot de passe incorrect');
     } finally {
       setIsLoading(false);
     }

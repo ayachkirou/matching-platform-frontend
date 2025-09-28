@@ -3,6 +3,7 @@ import './App.css'
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import logo from './assets/logo.png'
 
+
 function App() {
   const navigate = useNavigate()
 
