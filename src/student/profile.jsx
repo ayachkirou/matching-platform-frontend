@@ -30,6 +30,8 @@ function StudentProfile() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [uploading, setUploading] = useState({ cv: false, photo: false });
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -206,16 +208,16 @@ function StudentProfile() {
   };
 
   const handleDownloadCV = async () => {
-  if (!student?.cv) return;
+    if (!student?.cv) return;
 
-  try {
-    // Utiliser le FileController pour télécharger le CV
-    window.open(`http://localhost:8080/api/files/${student.cv}`, '_blank');
-    
-  } catch (error) {
-    setErrors({ submit: error.message || 'Erreur lors du téléchargement du CV' });
-  }
-};
+    try {
+      // Utiliser le FileController pour télécharger le CV
+      window.open(`http://localhost:8080/api/files/${student.cv}`, '_blank');
+      
+    } catch (error) {
+      setErrors({ submit: error.message || 'Erreur lors du téléchargement du CV' });
+    }
+  };
 
   const triggerFileInput = (type) => {
     if (type === 'cv') {
@@ -225,7 +227,6 @@ function StudentProfile() {
     }
   };
 
-  // Le reste des fonctions existantes reste inchangé...
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -265,9 +266,6 @@ function StudentProfile() {
     setSaving(true);
     try {
       const token = getToken();
-      console.log('Token:', token); 
-      console.log('Email:', user.email); 
-    
       const result = await authService.updateStudentProfile(user.email, formData, token);
       
       setStudent(result.student);
@@ -366,17 +364,19 @@ function StudentProfile() {
         className="hidden"
       />
 
-      {/* Navigation principale */}
+      {/* Navigation principale - Version responsive améliorée */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
+            {/* Logo et bouton menu mobile */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/')}>
                 <i className="fas fa-graduation-cap text-emerald-600 text-2xl mr-2"></i>
                 <span className="text-xl font-bold text-gray-900">TalentMatch</span>
               </div>
               
-              <div className="hidden md:ml-8 md:flex md:space-x-4">
+              {/* Navigation desktop */}
+              <div className="hidden md:ml-8 md:flex md:space-x-1">
                 <button 
                   className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     location.pathname === '/student/dashboard' 
@@ -423,72 +423,161 @@ function StudentProfile() {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  {student?.photoProfil ? (
-                    <img 
-                      className="h-8 w-8 rounded-full object-cover" 
-                      src={`http://localhost:8080/uploads/${student.photoProfil}`} 
-                      alt="Profil" 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'flex';
-                      }}
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <i className="fas fa-user text-emerald-600 text-sm"></i>
-                    </div>
-                  )}
-                </div>
-                <div className="hidden md:block">
-                  <div className="text-sm font-medium text-gray-900">{student?.prenom} {student?.nom}</div>
-                  <div className="text-xs text-gray-500">Étudiant</div>
-                </div>
+            {/* Section utilisateur avec menu déroulant */}
+            <div className="flex items-center space-x-3">
+              {/* Bouton menu mobile */}
+              <div className="md:hidden">
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-emerald-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+                >
+                  <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
+                </button>
               </div>
-              <button 
-                onClick={handleLogout}
-                className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 hover:text-emerald-600 transition-colors"
-              >
-                <i className="fas fa-sign-out-alt mr-1"></i>
-                Déconnexion
-              </button>
+
+              {/* Menu utilisateur */}
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-3 p-1 rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="flex-shrink-0">
+                      {student?.photoProfil ? (
+                        <img 
+                          className="h-8 w-8 rounded-full object-cover border border-gray-200" 
+                          src={`http://localhost:8080/api/files/${student.photoProfil}`} 
+                          alt="Profil" 
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center border border-gray-200">
+                          <i className="fas fa-user text-emerald-600 text-sm"></i>
+                        </div>
+                      )}
+                    </div>
+                    <div className="hidden sm:block text-left">
+                      <div className="text-sm font-medium text-gray-900">{student?.prenom} {student?.nom}</div>
+                      <div className="text-xs text-gray-500">Étudiant</div>
+                    </div>
+                    <i className={`fas fa-chevron-down text-gray-400 text-xs transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}></i>
+                  </div>
+                </button>
+
+                {/* Menu déroulant utilisateur */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <div className="text-sm font-medium text-gray-900">{student?.prenom} {student?.nom}</div>
+                      <div className="text-xs text-gray-500 truncate">{user?.email}</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                    >
+                      <i className="fas fa-sign-out-alt mr-2"></i>
+                      Déconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Menu mobile */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-2">
+              <div className="space-y-1">
+                <button 
+                  className={`w-full flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    location.pathname === '/student/dashboard' 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    navigate('/student/dashboard');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <i className="fas fa-home mr-3"></i>
+                  Tableau de bord
+                </button>
+                <button 
+                  className={`w-full flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                    location.pathname === '/student/profile' 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'text-gray-600 hover:text-emerald-600 hover:bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    navigate('/student/profile');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <i className="fas fa-user mr-3"></i>
+                  Mon Profil
+                </button>
+                <button 
+                  className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    navigate('/student/offers');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <i className="fas fa-briefcase mr-3"></i>
+                  Offres
+                </button>
+                <button 
+                  className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    navigate('/student/applications');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <i className="fas fa-file-alt mr-3"></i>
+                  Candidatures
+                </button>
+                <button 
+                  className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
+                  onClick={() => {
+                    navigate('/student/messages');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <i className="fas fa-comments mr-3"></i>
+                  Messages
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Contenu principal */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header du profil */}
         <div className="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
-          <div className="px-6 py-8">
+          <div className="px-4 sm:px-6 py-6 sm:py-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center space-x-6">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="relative self-start sm:self-auto">
                   {student?.photoProfil ? (
                     <img 
-                      className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg" 
-                      src={`http://localhost:8080/uploads/${student.photoProfil}`} 
+                      className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-4 border-white shadow-lg" 
+                      src={`http://localhost:8080/api/files/${student.photoProfil}`} 
                       alt="Profil" 
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        // Afficher l'avatar par défaut en cas d'erreur
-                        const defaultAvatar = e.target.parentNode.querySelector('.default-avatar');
-                        if (defaultAvatar) defaultAvatar.style.display = 'flex';
-                      }}
                     />
                   ) : (
-                    <div className="h-24 w-24 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-white shadow-lg default-avatar">
-                      <i className="fas fa-user text-emerald-600 text-3xl"></i>
+                    <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-emerald-100 flex items-center justify-center border-4 border-white shadow-lg">
+                      <i className="fas fa-user text-emerald-600 text-2xl sm:text-3xl"></i>
                     </div>
                   )}
                   <button 
-                    className="absolute bottom-0 right-0 h-8 w-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-emerald-600 transition-colors"
+                    className="absolute -bottom-1 -right-1 h-7 w-7 sm:h-8 sm:w-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-emerald-600 transition-colors"
                     onClick={() => setShowPhotoMenu(!showPhotoMenu)}
                   >
-                    <i className="fas fa-camera text-sm"></i>
+                    <i className="fas fa-camera text-xs sm:text-sm"></i>
                   </button>
                   
                   {/* Menu déroulant pour la photo */}
@@ -513,10 +602,10 @@ function StudentProfile() {
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{student?.prenom} {student?.nom}</h1>
-                  <p className="text-gray-600 mt-1">{student?.specialite} • {student?.etablissement}</p>
-                  <div className="flex flex-wrap gap-2 mt-3">
+                <div className="text-center sm:text-left">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{student?.prenom} {student?.nom}</h1>
+                  <p className="text-gray-600 mt-1 text-sm sm:text-base">{student?.specialite} • {student?.etablissement}</p>
+                  <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
                     {getStatusBadge(student?.statut)}
                     {/* Afficher le badge de progression seulement si le profil n'est pas complet à 100% */}
                     {completionPercentage < 100 && (
@@ -536,7 +625,7 @@ function StudentProfile() {
                 </div>
               </div>
               
-              <div className="mt-6 lg:mt-0">
+              <div className="mt-6 lg:mt-0 flex justify-center sm:justify-start">
                 {!isEditing ? (
                   <button 
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
@@ -597,20 +686,19 @@ function StudentProfile() {
           </div>
         )}
 
-
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          {/* Navigation des onglets */}
+          {/* Navigation des onglets - Version responsive */}
           <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+            <nav className="flex overflow-x-auto -mb-px hide-scrollbar">
               {[
-                { id: 'personal', name: 'Informations personnelles', icon: 'user' },
-                { id: 'education', name: 'Formation', icon: 'graduation-cap' },
-                { id: 'skills', name: 'Compétences', icon: 'code' },
-                { id: 'documents', name: 'Documents', icon: 'file' }
+                { id: 'personal', name: 'Informations', icon: 'user', fullName: 'Informations personnelles' },
+                { id: 'education', name: 'Formation', icon: 'graduation-cap', fullName: 'Formation' },
+                { id: 'skills', name: 'Compétences', icon: 'code', fullName: 'Compétences' },
+                { id: 'documents', name: 'Documents', icon: 'file', fullName: 'Documents' }
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  className={`flex items-center py-4 px-6 text-sm font-medium border-b-2 transition-colors ${
+                  className={`flex-shrink-0 flex items-center py-4 px-4 sm:px-6 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-emerald-500 text-emerald-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -618,14 +706,15 @@ function StudentProfile() {
                   onClick={() => setActiveTab(tab.id)}
                 >
                   <i className={`fas fa-${tab.icon} mr-2`}></i>
-                  {tab.name}
+                  <span className="hidden sm:inline">{tab.fullName}</span>
+                  <span className="sm:hidden">{tab.name}</span>
                 </button>
               ))}
             </nav>
           </div>
 
           {/* Contenu des onglets */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Onglet Informations personnelles */}
             {activeTab === 'personal' && (
               <div>
@@ -994,6 +1083,18 @@ function StudentProfile() {
           </div>
         </div>
       </main>
+
+      {/* Fermer les menus déroulants en cliquant à l'extérieur */}
+      {(showPhotoMenu || userMenuOpen || mobileMenuOpen) && (
+        <div 
+          className="fixed inset-0 z-40"
+          onClick={() => {
+            setShowPhotoMenu(false);
+            setUserMenuOpen(false);
+            setMobileMenuOpen(false);
+          }}
+        ></div>
+      )}
     </div>
   );
 }
