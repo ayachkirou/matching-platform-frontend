@@ -1,0 +1,117 @@
+.offer-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: white;
+}
+
+.offer-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.offer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.offer-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #333;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.match-badge {
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  min-width: 80px;
+  text-align: center;
+}
+
+.offer-details {
+  margin-bottom: 12px;
+}
+
+.company-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.company-name {
+  font-weight: bold;
+  color: #555;
+}
+
+.location {
+  color: #777;
+}
+
+.offer-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.offer-description {
+  color: #666;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.skill-badge {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.offer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.apply-btn, .details-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.apply-btn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.apply-btn:hover {
+  background-color: #388e3c;
+}
+
+.details-btn {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.details-btn:hover {
+  background-color: #e0e0e0;
+}

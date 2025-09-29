@@ -1,13 +1,7 @@
-import { useState } from 'react'
-import './App.css'
+import OffersMatchingApp from './components/OffersMatchingApp';
 
 function App() {
-
-  return <div className="App">
-    <h1 className="text-3xl font-bold underline text-blue-700">
-      Hello world!
-    </h1>
-  </div>
+  return <OffersMatchingApp />;
 }
 
-export default App
+export default App;
