@@ -395,7 +395,7 @@ function CompanyProfile() {
                       onClick={(e) => e.stopPropagation()} // Empêche la fermeture immédiate
                     >
                       {/* SOLUTION 1: Bouton avec onClick direct */}
-                      <button
+                      {/* <button
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center disabled:opacity-50"
                         onClick={() => {
                           console.log('Bouton logo cliqué');
@@ -414,16 +414,16 @@ function CompanyProfile() {
                             {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
                           </>
                         )}
-                      </button>
+                      </button> */}
 
                       {/* SOLUTION 2: Alternative avec label (au cas où) */}
-                      {/* <label 
+                      <label 
                         htmlFor="logo-upload-input"
                         className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center cursor-pointer"
                       >
                         <i className="fas fa-upload mr-2"></i>
                         {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
-                      </label> */}
+                      </label>
 
                       {company?.logo && (
                         <button
