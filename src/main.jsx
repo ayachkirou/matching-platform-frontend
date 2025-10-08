@@ -9,6 +9,7 @@ import StudentSignup from "./signup/student.jsx";
 import CompanyConfirmation from './pages/CompanyConfirmation';
 import Login from './Login';
 import StudentProfile from './student/profile.jsx'
+import CompanyProfile from './company/profile.jsx'
 import { AuthProvider } from './contexts/AuthContext'; 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="/login" element={<Login />} />
           <Route path="/company/confirmation" element={<CompanyConfirmation />} />
           <Route path='/student/profile' element={<StudentProfile />}/>
+          <Route path="/company/profile" element={<CompanyProfile />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

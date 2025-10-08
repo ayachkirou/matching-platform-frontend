@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
+import logo from '../assets/logo.png';
 
 function StudentProfile() {
   const navigate = useNavigate();
@@ -371,7 +372,13 @@ function StudentProfile() {
             {/* Logo et bouton menu mobile */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/')}>
-                <i className="fas fa-graduation-cap text-emerald-600 text-2xl mr-2"></i>
+                <div className="h-14  rounded-lg flex items-center justify-center">
+                  <img
+                    src={logo}
+                    alt="TalentMatch Logo"
+                    className="w-14 h-14 rounded"
+                  />
+                </div>
                 <span className="text-xl font-bold text-gray-900">TalentMatch</span>
               </div>
               

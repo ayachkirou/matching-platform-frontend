@@ -149,5 +149,30 @@ export const authService = {
     }
 
     return await response.blob();
-  }
+  },
+  async getCompanyProfile(email, token) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/companies/me?email=${encodeURIComponent(email)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Session expirée. Veuillez vous reconnecter.');
+        }
+        const errorText = await response.text();
+        throw new Error(errorText || 'Erreur lors de la récupération du profil');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur dans getCompanyProfile:', error);
+      throw error;
+    }
+  },
+
 };

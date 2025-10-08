@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
+import logo from '../assets/logo.png'
 
 function StudentSignup() {
   const navigate = useNavigate();
@@ -304,8 +305,12 @@ function StudentSignup() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">TM</span>
+            <div className="h-14  rounded-lg flex items-center justify-center">
+              <img
+                src={logo}
+                alt="TalentMatch Logo"
+                className="w-16 h-16 rounded"
+              />
             </div>
             <span className="text-2xl font-bold text-gray-800">TalentMatch</span>
           </div>
