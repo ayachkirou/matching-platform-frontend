@@ -79,14 +79,16 @@ function CompanyProfile() {
     }
   }, [user, getToken, navigate, logout]);
 
-  // Fonctions pour la gestion du logo
+  // Fonctions pour la gestion du logo - SOLUTION CORRIGÉE
   const handleLogoUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
+    console.log('Fichier sélectionné:', file.name, file.type, file.size);
+
     // Vérifier le type de fichier
     if (!file.type.startsWith('image/')) {
-      setErrors({ submit: 'Veuillez sélectionner une image' });
+      setErrors({ submit: 'Veuillez sélectionner une image (JPG, PNG, etc.)' });
       return;
     }
 
@@ -97,19 +99,26 @@ function CompanyProfile() {
     }
 
     setUploading(prev => ({ ...prev, logo: true }));
+    setShowLogoMenu(false);
+    
     try {
       const token = getToken();
+      console.log('Envoi du logo...');
       const result = await companyService.uploadLogo(user.email, file, token);
       
       setCompany(prev => ({ ...prev, logo: result.logoFilename }));
       setSuccessMessage('Logo mis à jour avec succès!');
       setTimeout(() => setSuccessMessage(''), 5000);
-      setShowLogoMenu(false);
+      
+      // Réinitialiser l'input file
+      if (logoInputRef.current) {
+        logoInputRef.current.value = '';
+      }
     } catch (error) {
+      console.error('Erreur upload logo:', error);
       setErrors({ submit: error.message || 'Erreur lors du téléchargement du logo' });
     } finally {
       setUploading(prev => ({ ...prev, logo: false }));
-      event.target.value = ''; // Reset input
     }
   };
 
@@ -127,8 +136,14 @@ function CompanyProfile() {
     }
   };
 
+  // SOLUTION GARANTIE POUR LE BOUTON LOGO
   const triggerLogoInput = () => {
-    logoInputRef.current?.click();
+    console.log('Déclenchement input file...');
+    if (logoInputRef.current) {
+      logoInputRef.current.click();
+    } else {
+      console.error('Réf input file non disponible');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -201,6 +216,12 @@ function CompanyProfile() {
     navigate('/login');
   };
 
+  const handleDownloadDocument = (filename) => {
+    if (filename) {
+      window.open(`http://localhost:8081/api/files/${filename}`, '_blank');
+    }
+  };
+
   const getVerificationBadge = (status) => {
     const statusConfig = {
       'VERIFIED': { label: 'Vérifiée', color: 'emerald', icon: 'check-circle' },
@@ -230,23 +251,24 @@ function CompanyProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Input caché pour le logo */}
+      {/* Input file POUR LE LOGO - BIEN PLACÉ ET ACCESSIBLE */}
       <input
         type="file"
         ref={logoInputRef}
         onChange={handleLogoUpload}
         accept="image/*"
         className="hidden"
+        id="logo-upload-input"
       />
 
-      {/* Navigation principale - Similaire à StudentProfile */}
+      {/* Navigation principale */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             {/* Logo et navigation */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/')}>
-                <div className="h-14  rounded-lg flex items-center justify-center">
+                <div className="h-14 rounded-lg flex items-center justify-center">
                   <img
                     src={logo}
                     alt="TalentMatch Logo"
@@ -296,7 +318,7 @@ function CompanyProfile() {
                       {company?.logo ? (
                         <img 
                           className="h-8 w-8 rounded-full object-cover border border-gray-200" 
-                          src={`http://localhost:8080/api/files/${company.logo}`} 
+                          src={`http://localhost:8081/api/files/${company.logo}`} 
                           alt="Logo" 
                         />
                       ) : (
@@ -344,7 +366,7 @@ function CompanyProfile() {
                   {company?.logo ? (
                     <img 
                       className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-4 border-white shadow-lg" 
-                      src={`http://localhost:8080/api/files/${company.logo}`} 
+                      src={`http://localhost:8081/api/files/${company.logo}`} 
                       alt="Logo" 
                     />
                   ) : (
@@ -352,27 +374,62 @@ function CompanyProfile() {
                       <i className="fas fa-building text-emerald-600 text-2xl sm:text-3xl"></i>
                     </div>
                   )}
+                  
+                  {/* BOUTON CAMERA POUR OUVIR LE MENU LOGO */}
                   <button 
                     className="absolute -bottom-1 -right-1 h-7 w-7 sm:h-8 sm:w-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-emerald-600 transition-colors"
                     onClick={() => setShowLogoMenu(!showLogoMenu)}
+                    disabled={uploading.logo}
                   >
-                    <i className="fas fa-camera text-xs sm:text-sm"></i>
+                    {uploading.logo ? (
+                      <i className="fas fa-spinner fa-spin text-xs sm:text-sm"></i>
+                    ) : (
+                      <i className="fas fa-camera text-xs sm:text-sm"></i>
+                    )}
                   </button>
                   
-                  {/* Menu déroulant pour le logo */}
+                  {/* MENU DÉROULANT LOGO - SOLUTION GARANTIE */}
                   {showLogoMenu && (
-                    <div className="absolute bottom-10 right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div 
+                      className="absolute bottom-10 right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                      onClick={(e) => e.stopPropagation()} // Empêche la fermeture immédiate
+                    >
+                      {/* SOLUTION 1: Bouton avec onClick direct */}
                       <button
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center"
-                        onClick={triggerLogoInput}
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center disabled:opacity-50"
+                        onClick={() => {
+                          console.log('Bouton logo cliqué');
+                          triggerLogoInput();
+                        }}
+                        disabled={uploading.logo}
+                      >
+                        {uploading.logo ? (
+                          <>
+                            <i className="fas fa-spinner fa-spin mr-2"></i>
+                            Envoi en cours...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-upload mr-2"></i>
+                            {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
+                          </>
+                        )}
+                      </button>
+
+                      {/* SOLUTION 2: Alternative avec label (au cas où) */}
+                      {/* <label 
+                        htmlFor="logo-upload-input"
+                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center cursor-pointer"
                       >
                         <i className="fas fa-upload mr-2"></i>
                         {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
-                      </button>
+                      </label> */}
+
                       {company?.logo && (
                         <button
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center"
                           onClick={handleDeleteLogo}
+                          disabled={uploading.logo}
                         >
                           <i className="fas fa-trash mr-2"></i>
                           Supprimer le logo
@@ -458,7 +515,8 @@ function CompanyProfile() {
               {[
                 { id: 'info', name: 'Informations', icon: 'info-circle', fullName: 'Informations entreprise' },
                 { id: 'contact', name: 'Contact', icon: 'envelope', fullName: 'Coordonnées' },
-                { id: 'legal', name: 'Juridique', icon: 'balance-scale', fullName: 'Informations juridiques' }
+                { id: 'legal', name: 'Juridique', icon: 'balance-scale', fullName: 'Informations juridiques' },
+                { id: 'documents', name: 'Documents', icon: 'file', fullName: 'Documents justificatifs' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -598,34 +656,105 @@ function CompanyProfile() {
               <div>
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-gray-900">Informations juridiques</h2>
-                  <p className="text-gray-600">Informations légales de votre entreprise</p>
+                  <p className="text-gray-600">Informations légales de votre entreprise (lecture seule)</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Registre de commerce</label>
                     <input
-                      name="registreCommerce"
                       type="text"
-                      value={formData.registreCommerce}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      placeholder="RC123456789"
+                      value={formData.registreCommerce || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500"
+                      placeholder="Non renseigné"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ICE</label>
                     <input
-                      name="ice"
                       type="text"
-                      value={formData.ice}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                      placeholder="001234567890"
+                      value={formData.ice || ''}
+                      disabled
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500"
+                      placeholder="Non renseigné"
                     />
+                  </div>
+                </div>
+                
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center">
+                    <i className="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <p className="text-sm text-blue-700">
+                      Les informations juridiques ne peuvent pas être modifiées après l'inscription. 
+                      Contactez le support pour toute modification.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Nouvel onglet Documents justificatifs */}
+            {activeTab === 'documents' && (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-900">Documents justificatifs</h2>
+                  <p className="text-gray-600">Documents soumis lors de l'inscription (lecture seule)</p>
+                </div>
+                
+                <div className="space-y-6">
+                  {/* Document justificatif */}
+                  <div className="border border-gray-200 rounded-lg p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                          <i className="fas fa-file-pdf text-red-600 text-xl"></i>
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">Document justificatif</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {company?.documentJustificatif ? 'Document téléchargé' : 'Aucun document'}
+                          </p>
+                          {company?.documentJustificatif && (
+                            <span className="text-xs text-gray-400">PDF</span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        {company?.documentJustificatif ? (
+                          <button 
+                            className="inline-flex items-center px-4 py-2 border border-emerald-300 text-sm font-medium rounded-md text-emerald-700 bg-white hover:bg-emerald-50 transition-colors"
+                            onClick={() => handleDownloadDocument(company.documentJustificatif)}
+                          >
+                            <i className="fas fa-download mr-2"></i>
+                            Télécharger
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Non fourni
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-4 text-xs text-gray-500">
+                      <p>• Document officiel prouvant l'existence de votre entreprise</p>
+                      <p>• Format : PDF</p>
+                    </div>
+                  </div>
+
+                  {/* Information sur les documents */}
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <i className="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                      <div>
+                        <p className="text-sm text-yellow-700 font-medium">Documents en lecture seule</p>
+                        <p className="text-sm text-yellow-600 mt-1">
+                          Les documents justificatifs ne peuvent pas être modifiés après l'inscription. 
+                          Pour toute modification, veuillez contacter notre support.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

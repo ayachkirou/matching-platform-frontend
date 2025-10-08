@@ -66,7 +66,7 @@ function Login() {
       
       // Rediriger selon le rôle
       if (response.role === 'STUDENT') {
-        navigate('/student/profile');
+        navigate('/student/dashboard');
       } else if (response.role === 'COMPANY') {
         navigate('/company/dashboard');
       } else if (response.role === 'ADMIN') {
