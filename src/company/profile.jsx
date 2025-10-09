@@ -28,8 +28,10 @@ function CompanyProfile() {
   const [showLogoMenu, setShowLogoMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const logoInputRef = useRef(null);
+  const logoMenuRef = useRef(null);
 
   // Rediriger vers login si non authentifié
   useEffect(() => {
@@ -79,7 +81,21 @@ function CompanyProfile() {
     }
   }, [user, getToken, navigate, logout]);
 
-  // Fonctions pour la gestion du logo - SOLUTION CORRIGÉE
+  // Fermer le menu logo en cliquant à l'extérieur
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (logoMenuRef.current && !logoMenuRef.current.contains(event.target)) {
+        setShowLogoMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fonctions pour la gestion du logo
   const handleLogoUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -131,18 +147,16 @@ function CompanyProfile() {
       setSuccessMessage('Logo supprimé avec succès!');
       setTimeout(() => setSuccessMessage(''), 5000);
       setShowLogoMenu(false);
+      setShowDeleteConfirm(false);
     } catch (error) {
       setErrors({ submit: error.message || 'Erreur lors de la suppression du logo' });
     }
   };
 
-  // SOLUTION GARANTIE POUR LE BOUTON LOGO
   const triggerLogoInput = () => {
     console.log('Déclenchement input file...');
     if (logoInputRef.current) {
       logoInputRef.current.click();
-    } else {
-      console.error('Réf input file non disponible');
     }
   };
 
@@ -164,10 +178,8 @@ function CompanyProfile() {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.nomEntreprise.trim()) newErrors.nomEntreprise = 'Le nom de l\'entreprise est obligatoire';
     if (!formData.telephone.trim()) newErrors.telephone = 'Le téléphone est obligatoire';
     if (!formData.adresse.trim()) newErrors.adresse = 'L\'adresse est obligatoire';
-    if (!formData.secteurActivite.trim()) newErrors.secteurActivite = 'Le secteur d\'activité est obligatoire';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -218,7 +230,7 @@ function CompanyProfile() {
 
   const handleDownloadDocument = (filename) => {
     if (filename) {
-      window.open(`http://localhost:8081/api/files/${filename}`, '_blank');
+      window.open(`http://localhost:8080/api/files/${filename}`, '_blank');
     }
   };
 
@@ -251,21 +263,20 @@ function CompanyProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Input file POUR LE LOGO - BIEN PLACÉ ET ACCESSIBLE */}
+      {/* Input file POUR LE LOGO */}
       <input
         type="file"
         ref={logoInputRef}
         onChange={handleLogoUpload}
         accept="image/*"
         className="hidden"
-        id="logo-upload-input"
       />
 
       {/* Navigation principale */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            {/* Logo et navigation */}
+            {/* Logo */}
             <div className="flex items-center">
               <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => navigate('/')}>
                 <div className="h-14 rounded-lg flex items-center justify-center">
@@ -277,33 +288,43 @@ function CompanyProfile() {
                 </div>
                 <span className="text-xl font-bold text-gray-900">TalentMatch</span>
               </div>
-              
-              {/* Navigation desktop */}
-              <div className="hidden md:ml-8 md:flex md:space-x-1">
-                <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
-                  <i className="fas fa-home mr-2"></i>
-                  Tableau de bord
-                </button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium bg-emerald-100 text-emerald-700">
-                  <i className="fas fa-user mr-2"></i>
-                  Mon Profil
-                </button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
-                  <i className="fas fa-briefcase mr-2"></i>
-                  Offres
-                </button>
-                <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
-                  <i className="fas fa-users mr-2"></i>
-                  Candidats
-                </button>
-                <button 
-                  className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
-                  onClick={() => navigate('/student/messages')}
-                >
-                  <i className="fas fa-comments mr-2"></i>
-                  Messages
-                </button>
-              </div>
+            </div>
+
+            {/* Navigation desktop  */}
+            <div className="hidden md:flex md:items-center md:space-x-1 md:absolute md:left-1/2 md:transform md:-translate-x-1/2 md:mt-3"  >
+              <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                <i className="fas fa-home mr-2"></i>
+                Tableau de bord
+              </button>
+              <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium bg-emerald-100 text-emerald-700">
+                <i className="fas fa-user mr-2"></i>
+                Mon Profil
+              </button>
+              <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                <i className="fas fa-briefcase mr-2"></i>
+                Offres
+              </button>
+              <button className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                <i className="fas fa-users mr-2"></i>
+                Candidats
+              </button>
+              <button 
+                className="inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors"
+                onClick={() => navigate('/student/messages')}
+              >
+                <i className="fas fa-comments mr-2"></i>
+                Messages
+              </button>
+            </div>
+
+            {/* Menu mobile */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500"
+              >
+                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
+              </button>
             </div>
             
             {/* Section utilisateur */}
@@ -318,7 +339,7 @@ function CompanyProfile() {
                       {company?.logo ? (
                         <img 
                           className="h-8 w-8 rounded-full object-cover border border-gray-200" 
-                          src={`http://localhost:8081/api/files/${company.logo}`} 
+                          src={`http://localhost:8080/api/files/${company.logo}`} 
                           alt="Logo" 
                         />
                       ) : (
@@ -352,13 +373,74 @@ function CompanyProfile() {
               </div>
             </div>
           </div>
+
+          {/* Menu mobile responsive */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-2 border-t border-gray-200">
+              <div className="flex flex-col space-y-1">
+                <button className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-home mr-3"></i>
+                  Tableau de bord
+                </button>
+                <button className="flex items-center px-3 py-2 text-base font-medium bg-emerald-100 text-emerald-700">
+                  <i className="fas fa-user mr-3"></i>
+                  Mon Profil
+                </button>
+                <button className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-briefcase mr-3"></i>
+                  Offres
+                </button>
+                <button className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-users mr-3"></i>
+                  Candidats
+                </button>
+                <button className="flex items-center px-3 py-2 text-base font-medium text-gray-500 hover:text-emerald-600 hover:bg-gray-50 transition-colors">
+                  <i className="fas fa-comments mr-3"></i>
+                  Messages
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
+
+      {/* Modal de confirmation de suppression */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                <i className="fas fa-exclamation-triangle text-red-600"></i>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900">Supprimer le logo</h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Êtes-vous sûr de vouloir supprimer votre logo ? Cette action est irréversible.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleDeleteLogo}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenu principal */}
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header du profil */}
-        <div className="bg-white overflow-hidden shadow-sm rounded-lg mb-6">
+        <div className="bg-white shadow-sm rounded-lg mb-6">
           <div className="px-4 sm:px-6 py-6 sm:py-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -366,7 +448,7 @@ function CompanyProfile() {
                   {company?.logo ? (
                     <img 
                       className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-4 border-white shadow-lg" 
-                      src={`http://localhost:8081/api/files/${company.logo}`} 
+                      src={`http://localhost:8080/api/files/${company.logo}`} 
                       alt="Logo" 
                     />
                   ) : (
@@ -375,68 +457,48 @@ function CompanyProfile() {
                     </div>
                   )}
                   
-                  {/* BOUTON CAMERA POUR OUVIR LE MENU LOGO */}
-                  <button 
-                    className="absolute -bottom-1 -right-1 h-7 w-7 sm:h-8 sm:w-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-emerald-600 transition-colors"
-                    onClick={() => setShowLogoMenu(!showLogoMenu)}
-                    disabled={uploading.logo}
-                  >
-                    {uploading.logo ? (
-                      <i className="fas fa-spinner fa-spin text-xs sm:text-sm"></i>
-                    ) : (
-                      <i className="fas fa-camera text-xs sm:text-sm"></i>
-                    )}
-                  </button>
-                  
-                  {/* MENU DÉROULANT LOGO - SOLUTION GARANTIE */}
-                  {showLogoMenu && (
-                    <div 
-                      className="absolute bottom-10 right-0 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
-                      onClick={(e) => e.stopPropagation()} // Empêche la fermeture immédiate
+                  {/* BOUTON CAMERA */}
+                  <div className="relative" ref={logoMenuRef}>
+                    <button 
+                      className="absolute -bottom-1 -right-1 h-7 w-7 sm:h-8 sm:w-8 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-emerald-600 transition-colors z-10"
+                      onClick={() => setShowLogoMenu(!showLogoMenu)}
+                      disabled={uploading.logo}
                     >
-                      {/* SOLUTION 1: Bouton avec onClick direct */}
-                      {/* <button
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center disabled:opacity-50"
-                        onClick={() => {
-                          console.log('Bouton logo cliqué');
-                          triggerLogoInput();
-                        }}
-                        disabled={uploading.logo}
-                      >
-                        {uploading.logo ? (
-                          <>
-                            <i className="fas fa-spinner fa-spin mr-2"></i>
-                            Envoi en cours...
-                          </>
-                        ) : (
-                          <>
-                            <i className="fas fa-upload mr-2"></i>
-                            {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
-                          </>
-                        )}
-                      </button> */}
-
-                      {/* SOLUTION 2: Alternative avec label (au cas où) */}
-                      <label 
-                        htmlFor="logo-upload-input"
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 rounded-t-lg flex items-center cursor-pointer"
-                      >
-                        <i className="fas fa-upload mr-2"></i>
-                        {company?.logo ? 'Changer le logo' : 'Ajouter un logo'}
-                      </label>
-
-                      {company?.logo && (
-                        <button
-                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center"
-                          onClick={handleDeleteLogo}
-                          disabled={uploading.logo}
-                        >
-                          <i className="fas fa-trash mr-2"></i>
-                          Supprimer le logo
-                        </button>
+                      {uploading.logo ? (
+                        <i className="fas fa-spinner fa-spin text-xs sm:text-sm"></i>
+                      ) : (
+                        <i className="fas fa-camera text-xs sm:text-sm"></i>
                       )}
-                    </div>
-                  )}
+                    </button>
+
+                    {/* Menu logo */}
+                    {showLogoMenu && (
+                      <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 py-1">
+                        <button
+                          onClick={() => {
+                            triggerLogoInput();
+                            setShowLogoMenu(false);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center transition-colors"
+                        >
+                          <i className="fas fa-upload mr-3 text-gray-400"></i>
+                          Changer le logo
+                        </button>
+                        {company?.logo && (
+                          <button
+                            onClick={() => {
+                              setShowDeleteConfirm(true);
+                              setShowLogoMenu(false);
+                            }}
+                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
+                          >
+                            <i className="fas fa-trash mr-3 text-red-400"></i>
+                            Supprimer le logo
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="text-center sm:text-left">
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{company?.nomEntreprise}</h1>
@@ -542,40 +604,38 @@ function CompanyProfile() {
               <div>
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold text-gray-900">Informations de l'entreprise</h2>
-                  <p className="text-gray-600">Gérez les informations principales de votre entreprise</p>
+                  <p className="text-gray-600">Informations principales de votre entreprise (lecture seule)</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nom de l'entreprise</label>
                     <input
                       name="nomEntreprise"
                       type="text"
                       value={formData.nomEntreprise}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
-                        errors.nomEntreprise ? 'border-red-300' : 'border-gray-300'
-                      } ${!isEditing ? 'bg-gray-50 text-gray-500' : ''}`}
+                      disabled={true}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                       placeholder="Nom officiel de votre entreprise"
                     />
-                    {errors.nomEntreprise && <p className="mt-1 text-sm text-red-600">{errors.nomEntreprise}</p>}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Le nom de l'entreprise ne peut pas être modifié après l'inscription
+                    </p>
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Secteur d'activité *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Secteur d'activité</label>
                     <input
                       name="secteurActivite"
                       type="text"
                       value={formData.secteurActivite}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
-                        errors.secteurActivite ? 'border-red-300' : 'border-gray-300'
-                      } ${!isEditing ? 'bg-gray-50 text-gray-500' : ''}`}
+                      disabled={true}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                       placeholder="Informatique, Conseil, Santé, etc."
                     />
-                    {errors.secteurActivite && <p className="mt-1 text-sm text-red-600">{errors.secteurActivite}</p>}
+                    <p className="mt-1 text-xs text-gray-500">
+                      Le secteur d'activité ne peut pas être modifié après l'inscription
+                    </p>
                   </div>
 
                   <div className="md:col-span-2">
@@ -586,9 +646,14 @@ function CompanyProfile() {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       rows="4"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                        !isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'border-gray-300'
+                      }`}
                       placeholder="Décrivez votre entreprise, ses valeurs, ses activités principales..."
                     />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Vous pouvez modifier la description de votre entreprise
+                    </p>
                   </div>
                 </div>
               </div>
@@ -613,7 +678,7 @@ function CompanyProfile() {
                       disabled={!isEditing}
                       className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
                         errors.telephone ? 'border-red-300' : 'border-gray-300'
-                      } ${!isEditing ? 'bg-gray-50 text-gray-500' : ''}`}
+                      } ${!isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                       placeholder="+33 1 23 45 67 89"
                     />
                     {errors.telephone && <p className="mt-1 text-sm text-red-600">{errors.telephone}</p>}
@@ -627,7 +692,9 @@ function CompanyProfile() {
                       value={formData.siteWeb}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
+                        !isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'border-gray-300'
+                      }`}
                       placeholder="https://www.votre-entreprise.com"
                     />
                   </div>
@@ -642,7 +709,7 @@ function CompanyProfile() {
                       rows="3"
                       className={`w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 ${
                         errors.adresse ? 'border-red-300' : 'border-gray-300'
-                      } ${!isEditing ? 'bg-gray-50 text-gray-500' : ''}`}
+                      } ${!isEditing ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : ''}`}
                       placeholder="Adresse complète de votre entreprise"
                     />
                     {errors.adresse && <p className="mt-1 text-sm text-red-600">{errors.adresse}</p>}
@@ -666,7 +733,7 @@ function CompanyProfile() {
                       type="text"
                       value={formData.registreCommerce || ''}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                       placeholder="Non renseigné"
                     />
                   </div>
@@ -677,7 +744,7 @@ function CompanyProfile() {
                       type="text"
                       value={formData.ice || ''}
                       disabled
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
                       placeholder="Non renseigné"
                     />
                   </div>
@@ -764,12 +831,12 @@ function CompanyProfile() {
       </main>
 
       {/* Fermer les menus déroulants en cliquant à l'extérieur */}
-      {(showLogoMenu || userMenuOpen) && (
+      {(userMenuOpen || showLogoMenu) && (
         <div 
           className="fixed inset-0 z-40"
           onClick={() => {
-            setShowLogoMenu(false);
             setUserMenuOpen(false);
+            setShowLogoMenu(false);
           }}
         ></div>
       )}
