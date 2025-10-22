@@ -5,16 +5,15 @@ import Postulation from './Postulation';
 import Hero from './Hero';
 
 const OffersSection = () => {
-  // États existants
-  const [offers, setOffers] = useState([]);
+  // États principaux
+  const [allOffers, setAllOffers] = useState([]);
+  const [filteredOffers, setFilteredOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  // NOUVEAUX états pour le filtrage
-  const [allOffers, setAllOffers] = useState([]);
-  const [filteredOffers, setFilteredOffers] = useState([]);
+
+  // Filtres et recherche
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilters, setActiveFilters] = useState({
     type: 'all',
@@ -22,16 +21,17 @@ const OffersSection = () => {
     skills: 'all'
   });
 
-  // ✅ État pour l'ID de l'étudiant
+  // ✅ ID étudiant (temporaire — à remplacer plus tard par l’ID connecté)
   const [studentId, setStudentId] = useState(9);
 
-  // Chargement initial
+  // 📦 Chargement initial avec studentId (pour récupérer les favoris)
   useEffect(() => {
-    axios.get("/api/offers/with-company")
+    axios.get("/api/offers/with-company", {
+      params: { studentId: studentId }
+    })
       .then(response => {
         console.log('Offres chargées:', response.data);
         setAllOffers(response.data);
-        setOffers(response.data);
         setFilteredOffers(response.data);
         setLoading(false);
       })
@@ -40,9 +40,9 @@ const OffersSection = () => {
         setError("Une erreur est survenue lors du chargement des offres.");
         setLoading(false);
       });
-  }, []);
+  }, [studentId]);
 
-  // Appliquer les filtres
+  // 🔍 Application des filtres et recherche
   useEffect(() => {
     applyFilters();
   }, [searchTerm, activeFilters, allOffers]);
@@ -50,7 +50,7 @@ const OffersSection = () => {
   const applyFilters = () => {
     let filtered = [...allOffers];
 
-    // Filtre par recherche textuelle
+    // Recherche textuelle
     if (searchTerm.trim()) {
       const search = searchTerm.toLowerCase();
       filtered = filtered.filter(offer => 
@@ -90,19 +90,13 @@ const OffersSection = () => {
     }
 
     setFilteredOffers(filtered);
-    setOffers(filtered);
   };
 
-  // Gestion recherche et filtres
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
+  // 📥 Gestion recherche et filtres
+  const handleSearch = (term) => setSearchTerm(term);
+  const handleFilterChange = (filters) => setActiveFilters(filters);
 
-  const handleFilterChange = (filters) => {
-    setActiveFilters(filters);
-  };
-
-  // Fonctions existantes
+  // 🧩 Gestion de la postulation
   const handleApply = (offer) => {
     setSelectedOffer(offer);
     setIsModalOpen(true);
@@ -113,26 +107,34 @@ const OffersSection = () => {
     setSelectedOffer(null);
   };
 
-  if (loading) {
-    return <div>Chargement des offres...</div>;
-  }
+  // ❤️ Fonction callback pour MAJ des favoris localement
+  const handleFavoriChange = (offerId, isFavori) => {
+    const updateOffers = (offers) => 
+      offers.map(offer => 
+        offer.id === offerId ? { ...offer, isFavori } : offer
+      );
 
-  if (error) {
-    return <div>{error}</div>;
-  }
+    setAllOffers(prev => updateOffers(prev));
+    setFilteredOffers(prev => updateOffers(prev));
+  };
+
+  // ⚙️ Gestion des états de chargement / erreur
+  if (loading) return <div>Chargement des offres...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
+      {/* 🔍 Barre de recherche et filtres */}
       <Hero onSearch={handleSearch} onFilterChange={handleFilterChange} />
-      
+
       <section className="offers-section">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">
               {filteredOffers.length} offres trouvées
               {searchTerm && (
-                <span style={{ 
-                  fontSize: '1rem', 
+                <span style={{
+                  fontSize: '1rem',
                   color: '#666',
                   background: '#e9ecef',
                   padding: '0.3rem 0.8rem',
@@ -144,7 +146,8 @@ const OffersSection = () => {
               )}
             </h2>
           </div>
-          
+
+          {/* 🧱 Liste des offres */}
           <div className="offers-grid">
             {filteredOffers.map(offer => (
               <OfferCard 
@@ -152,10 +155,12 @@ const OffersSection = () => {
                 offer={offer}
                 onApply={handleApply}
                 studentId={studentId}
+                onFavoriChange={handleFavoriChange}
               />
             ))}
           </div>
 
+          {/* Aucun résultat */}
           {filteredOffers.length === 0 && (
             <div style={{
               textAlign: 'center',
@@ -165,8 +170,8 @@ const OffersSection = () => {
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
               <div style={{ fontSize: '3rem', marginBottom: '1rem', color: '#6c757d' }}>
-  <i className="fas fa-search-minus"></i>
-</div>
+                <i className="fas fa-search-minus"></i>
+              </div>
               <h3 style={{ color: '#666', marginBottom: '0.5rem' }}>Aucune offre trouvée</h3>
               <p style={{ color: '#999' }}>
                 Essayez de modifier vos critères de recherche ou vos filtres.
@@ -174,10 +179,11 @@ const OffersSection = () => {
             </div>
           )}
 
+          {/* Fenêtre modale de postulation */}
           {isModalOpen && selectedOffer && (
             <Postulation 
-              offer={selectedOffer} 
-              onClose={handleCloseModal} 
+              offer={selectedOffer}
+              onClose={handleCloseModal}
             />
           )}
         </div>

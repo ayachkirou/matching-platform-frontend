@@ -1,158 +1,126 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
-const OfferCard = ({ offer, toggleSave, onApply }) => {
+const OfferCard = ({ offer, onApply, studentId, onFavoriChange }) => {
   const [imageError, setImageError] = useState(false);
+  const [isFavori, setIsFavori] = useState(offer.favori || offer.saved || false);
+  const [loading, setLoading] = useState(false);
 
-  // Extraction des données avec valeurs par défaut
+  // 🔹 Extraction sécurisée des données
   const {
     id,
     titre = 'Titre non spécifié',
-    entrepriseId,
-    companyId = entrepriseId,
     typeOffre = 'CDI',
     salaire = 'Salaire non précisé',
     localisation = 'Non précisé',
     description = 'Aucune description disponible.',
     competencesRequises,
-    nomEntreprise,
-    companyName = nomEntreprise,
-    logoEntreprise,
-    companyLogo = logoEntreprise,
+    companyName = 'Entreprise inconnue',
+    companyLogo,
     datePublication,
-    createdAt,
-    dateCreation = datePublication || createdAt
   } = offer;
 
-  // 🔄 Conversion sécurisée des compétences
+  // 🔹 Conversion compétences
   const getSkillsArray = () => {
     try {
       if (!competencesRequises) return [];
-      
-      if (Array.isArray(competencesRequises)) {
-        return competencesRequises;
-      }
-      
+      if (Array.isArray(competencesRequises)) return competencesRequises;
       if (typeof competencesRequises === 'string') {
         const parsed = JSON.parse(competencesRequises);
         return Array.isArray(parsed) ? parsed : [parsed];
       }
-      
       return [];
-    } catch (error) {
-      console.error('Erreur parsing compétences:', error);
+    } catch {
       return [];
     }
   };
-
   const skillsArray = getSkillsArray();
 
-  // 🏢 Nom de l'entreprise
-  const getCompanyName = () => {
-    if (companyName && companyName.trim() !== '') return companyName;
-    if (nomEntreprise && nomEntreprise.trim() !== '') return nomEntreprise;
-    return `Entreprise #${companyId || 'N/A'}`;
-  };
-
-  const displayCompanyName = getCompanyName();
-
-  // 🖼️ Logo de l'entreprise
-  const getCompanyLogo = () => {
-    if (companyLogo && companyLogo.trim() !== '') return companyLogo;
-    if (logoEntreprise && logoEntreprise.trim() !== '') return logoEntreprise;
-    return null;
-  };
-
-  const companyLogoUrl = getCompanyLogo();
-
-  // 📅 Date de publication formatée
-  const formatPublicationDate = () => {
-    const dateString = dateCreation;
-    if (!dateString) return 'Publié récemment';
-
-    try {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-      const diffMinutes = Math.ceil(diffTime / (1000 * 60));
-
-      if (diffMinutes < 60) return 'À l\'instant';
-      if (diffHours < 24) return `Il y a ${diffHours}h`;
-      if (diffDays === 1) return 'Hier';
-      if (diffDays < 7) return `Il y a ${diffDays}j`;
-      if (diffDays < 30) return `Il y a ${Math.floor(diffDays/7)}sem`;
-      
-      return `Le ${date.toLocaleDateString('fr-FR')}`;
-    } catch (error) {
-      return 'Publié récemment';
-    }
-  };
-
-  // 🅰️ Initiales pour le fallback du logo
-  const getCompanyInitials = () => {
-    return displayCompanyName
+  // 🔹 Gestion image logo
+  const handleImageError = () => setImageError(true);
+  const getInitials = (name) =>
+    name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
       .substring(0, 2);
+
+  // 🔹 Format date
+  const formatDate = () => {
+    if (!datePublication) return 'Publié récemment';
+    const date = new Date(datePublication);
+    return `Le ${date.toLocaleDateString('fr-FR')}`;
   };
 
-  const handleImageError = () => {
-    setImageError(true);
+  // ❤️ Gestion favoris avec API
+  const handleSaveClick = async () => {
+    if (!studentId) {
+      alert('Veuillez vous connecter pour ajouter aux favoris.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await axios.post('/api/favoris/toggle', null, {
+        params: { studentId, offerId: id },
+      });
+
+      if (response.data.success) {
+        setIsFavori(response.data.isFavori);
+        if (onFavoriChange) {
+          onFavoriChange(id, response.data.isFavori);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du favori :', error);
+      alert('Erreur réseau, réessayez plus tard.');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // 🟢 Postuler
   const handlePostulerClick = () => {
-    if (onApply) {
-      onApply(offer);
-    }
-  };
-
-  const handleSaveClick = () => {
-    if (toggleSave) {
-      toggleSave(id);
-    }
+    if (onApply) onApply(offer);
   };
 
   return (
     <div className="offer-card">
+      {/* En-tête */}
       <div className="card-header">
         <div className="company-info">
-          {/* Logo entreprise */}
           <div className="company-logo">
-            {companyLogoUrl && !imageError ? (
-              <img 
-                src={companyLogoUrl} 
-                alt={`Logo ${displayCompanyName}`}
+            {companyLogo && !imageError ? (
+              <img
+                src={companyLogo}
+                alt={companyName}
                 className="company-logo-img"
                 onError={handleImageError}
               />
             ) : (
-              <div className="company-logo-fallback">
-                {getCompanyInitials()}
-              </div>
+              <div className="company-logo-fallback">{getInitials(companyName)}</div>
             )}
           </div>
 
-          {/* Nom entreprise et titre */}
           <div className="company-text">
             <h3>{titre}</h3>
-            <p>{displayCompanyName}</p>
+            <p>{companyName}</p>
           </div>
         </div>
 
-        {/* Bouton favori */}
-        <button 
-          className={`save-btn ${offer.saved ? 'saved' : ''}`}
+        {/* ❤️ Bouton favori */}
+        <button
+          className={`save-btn ${isFavori ? 'saved' : ''}`}
           onClick={handleSaveClick}
-          aria-label={offer.saved ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          disabled={loading}
+          aria-label={isFavori ? 'Retirer des favoris' : 'Ajouter aux favoris'}
         >
-          <i className={offer.saved ? 'fas fa-heart' : 'far fa-heart'}></i>
+          <i className={isFavori ? 'fas fa-heart' : 'far fa-heart'}></i>
         </button>
       </div>
 
-      {/* Badges type et salaire */}
+      {/* Détails de l'offre */}
       <div className="offer-details">
         <span className="offer-badge badge-primary">{typeOffre}</span>
         {salaire && salaire !== 'Salaire non précisé' && (
@@ -160,7 +128,6 @@ const OfferCard = ({ offer, toggleSave, onApply }) => {
         )}
       </div>
 
-      {/* Métadonnées */}
       <div className="offer-meta">
         <div className="meta-item">
           <i className="fas fa-map-marker-alt"></i>
@@ -168,11 +135,10 @@ const OfferCard = ({ offer, toggleSave, onApply }) => {
         </div>
         <div className="meta-item">
           <i className="far fa-clock"></i>
-          <span>{formatPublicationDate()}</span>
+          <span>{formatDate()}</span>
         </div>
       </div>
 
-      {/* Description */}
       <p className="offer-description">
         {description.length > 120 ? `${description.substring(0, 120)}...` : description}
       </p>
@@ -191,7 +157,7 @@ const OfferCard = ({ offer, toggleSave, onApply }) => {
         </div>
       )}
 
-      {/* Actions */}
+      {/* Boutons */}
       <div className="card-actions">
         <button className="btn btn-outline">Détails</button>
         <button className="btn btn-primary" onClick={handlePostulerClick}>

@@ -622,3 +622,59 @@ header {
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+/* Styles pour le bouton favori */
+.save-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  color: #ccc;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+}
+
+.save-btn:hover {
+  transform: scale(1.1);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.save-btn i {
+  transition: all 0.3s ease;
+}
+
+/* Coeur non sauvegardé */
+.save-btn:not(.saved) i {
+  color: #ccc;
+}
+
+.save-btn:not(.saved):hover i {
+  color: #28a745;
+}
+
+/* Coeur sauvegardé - VERT */
+.save-btn.saved i {
+  color: #28a745;
+  animation: heartbeat 0.3s ease;
+}
+
+.save-btn.saved:hover i {
+  color: #218838;
+}
+
+/* Animation du coeur */
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
