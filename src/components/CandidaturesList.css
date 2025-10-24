@@ -1,0 +1,348 @@
+.candidatures-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 80vh;
+}
+
+.candidatures-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+    text-align: center;
+    flex: 1;
+}
+
+.header-content h1 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+    font-size: 1.8em;
+}
+
+.candidatures-count {
+    background: #3498db;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-back {
+    background: #34495e;
+    color: white;
+}
+
+.btn-back:hover {
+    background: #2c3e50;
+    transform: translateY(-2px);
+}
+
+.btn-refresh {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-refresh:hover {
+    background: #219a52;
+    transform: translateY(-2px);
+}
+
+.btn-retry {
+    background: #e74c3c;
+    color: white;
+    margin-top: 15px;
+}
+
+.candidatures-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.candidature-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.candidature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.candidature-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.student-info h3 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 1.4em;
+}
+
+.student-email, .student-diplome {
+    margin: 5px 0;
+    color: #7f8c8d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.candidature-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 200px;
+}
+
+.statut-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.statut-en_attente {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.statut-en_cours_etude {
+    background: #cce7ff;
+    color: #004085;
+    border: 1px solid #b3d7ff;
+}
+
+.statut-acceptee {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.statut-refusee {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.date-candidature {
+    color: #7f8c8d;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.candidature-content {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.competences-section, .cv-section {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.competences-section h4, .cv-section h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cv-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 8px 16px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #3498db;
+    transition: all 0.3s ease;
+}
+
+.cv-link:hover {
+    background: #3498db;
+    color: white;
+    text-decoration: none;
+}
+
+.candidature-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+    gap: 20px;
+}
+
+.statut-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.statut-control label {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.statut-select {
+    padding: 8px 12px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9em;
+    min-width: 150px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-contact {
+    background: #3498db;
+    color: white;
+}
+
+.btn-contact:hover {
+    background: #2980b9;
+}
+
+.btn-profile {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-profile:hover {
+    background: #7f8c8d;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 12px;
+    color: #721c24;
+}
+
+.error-message i {
+    font-size: 3em;
+    margin-bottom: 20px;
+    color: #e74c3c;
+}
+
+.no-candidatures {
+    text-align: center;
+    padding: 80px 20px;
+    color: #7f8c8d;
+}
+
+.no-candidatures i {
+    font-size: 4em;
+    margin-bottom: 20px;
+    color: #bdc3c7;
+}
+
+.no-candidatures h3 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .candidatures-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .candidature-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .candidature-meta {
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .candidature-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .statut-control {
+        justify-content: space-between;
+    }
+
+    .action-buttons {
+        justify-content: center;
+    }
+}

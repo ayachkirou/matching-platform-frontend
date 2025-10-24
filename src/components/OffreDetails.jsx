@@ -1,6 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const OffreDetails = ({ offre, onBack, onEdit, onDelete }) => {
+  const navigate = useNavigate();
+
   if (!offre) {
     return (
       <div className="card">
@@ -64,6 +67,13 @@ const OffreDetails = ({ offre, onBack, onEdit, onDelete }) => {
           Retour à la liste
         </button>
         <div className="action-buttons">
+          <button 
+            onClick={() => navigate(`/offre/${offre.id}/candidatures`)} 
+            className="btn btn-candidatures"
+          >
+            <i className="fas fa-users"></i>
+            Voir les candidatures
+          </button>
           <button onClick={() => onEdit(offre)} className="btn btn-edit">
             <i className="fas fa-edit"></i>
             Modifier
@@ -250,13 +260,23 @@ const OffreDetails = ({ offre, onBack, onEdit, onDelete }) => {
           box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
         }
         
+        .btn-candidatures {
+          background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+          color: white;
+        }
+        
+        .btn-candidatures:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+        }
+        
         .btn-back {
-          background:white;
+          background: white;
           color: rgba(57, 118, 39, 1);
         }
         
         .btn-back:hover {
-          background:#397627;
+          background: #397627;
           color: white;
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(57, 118, 39, 1);
@@ -636,7 +656,7 @@ const OffreDetails = ({ offre, onBack, onEdit, onDelete }) => {
         
         @media (max-width: 480px) {
           .action-buttons {
-                flex-direction: column;
+            flex-direction: column;
           }
           
           .title-content h1 {
